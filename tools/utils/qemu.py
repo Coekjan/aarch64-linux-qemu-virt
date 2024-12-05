@@ -2,7 +2,9 @@ import pathlib
 import subprocess
 
 
-def run_aarch64_linux(qemu: pathlib.Path, /, *,
+def run_aarch64_linux(qemu: pathlib.Path,
+                      extra: tuple[str] | None = None,
+                      /, *,
                       init: bool,
                       smp: int,
                       ram: int,
@@ -27,6 +29,8 @@ def run_aarch64_linux(qemu: pathlib.Path, /, *,
         '-netdev', f'user,id=net0,hostfwd=tcp::{port}-:22',
         '-nographic',
     )
+    if extra:
+        args = args + extra
     if init:
         args = args + (
             '-drive', 'if=none,id=cd,file=install-media.iso',

@@ -26,12 +26,14 @@ def main():
             subparser = subparsers.add_parser(tool.stem)
             tool_fn(tool.stem, 'args')(subparser)
 
-    args = parser.parse_args()
+    args, extra = parser.parse_known_args()
     arch = args.arch
     func = tool_fn(args.subparser, 'do')
 
     args = {k: v for k, v in vars(args).items()
             if k not in ('arch', 'subparser')}
+    if extra and extra[0] == '--':
+        args['extra'] = tuple(extra[1:])
     func(arch, **args)
 
 

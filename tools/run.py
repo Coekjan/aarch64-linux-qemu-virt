@@ -10,7 +10,7 @@ def args(parser: argparse.ArgumentParser):
 
     NOTE: This is called from main.py.
     """
-    from pathvalidate.argparse import validate_filename_arg
+    from pathvalidate.argparse import validate_filename_arg, validate_filepath_arg
 
     parser.add_argument('name', type=validate_filename_arg,
                         help='The name of the workspace')
@@ -22,7 +22,9 @@ def args(parser: argparse.ArgumentParser):
                         help='The amount of RAM to allocate in GB')
     parser.add_argument('--port', type=int, default=8022,
                         help='The port to forward SSH to')
-    parser.add_argument('--kernel', type=validate_filename_arg,
+    parser.add_argument('-Q', '--qemu-path', type=validate_filepath_arg,
+                        help='The path to the QEMU executable')
+    parser.add_argument('-K', '--kernel', type=validate_filename_arg,
                         help='The name of the kernel image')
 
 
@@ -41,11 +43,15 @@ def do_aarch64(name: str,
                smp: int,
                ram: int,
                port: int,
-               kernel: str | None):
+               kernel: str | None,
+               qemu_path: str | None = None,
+               extra: tuple[str] | None = None):
     from .utils.qemu import run_aarch64_linux as run
 
+    if qemu_path:
+        qemu_path = pathlib.Path(qemu_path).resolve()
     goto_workspace('aarch64', name)
-    qemu = check_program('qemu-system-aarch64')
+    qemu = check_program('qemu-system-aarch64', path=qemu_path)
     if not pathlib.Path(disk_name).exists():
         raise FileNotFoundError(
             'Disk image not found, please run `init` first')
@@ -59,6 +65,7 @@ def do_aarch64(name: str,
 
     run(
         qemu,
+        extra,
         init=False,
         smp=smp,
         ram=ram,
