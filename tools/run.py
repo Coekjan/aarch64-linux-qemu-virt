@@ -20,12 +20,14 @@ def args(parser: argparse.ArgumentParser):
                         help='The number of virtual CPUs to use')
     parser.add_argument('--ram', type=int, default=4,
                         help='The amount of RAM to allocate in GB')
-    parser.add_argument('--port', type=int, default=8022,
+    parser.add_argument('--ssh-port', type=int, default=8022,
                         help='The port to forward SSH to')
     parser.add_argument('-Q', '--qemu-path', type=validate_filepath_arg,
                         help='The path to the QEMU executable')
     parser.add_argument('-K', '--kernel', type=validate_filename_arg,
                         help='The name of the kernel image')
+    parser.add_argument('-A', '--kernel-extra-bootargs', type=str,
+                        help='Extra boot arguments to pass to the kernel')
 
 
 def do(arch: str, **kwargs):
@@ -42,11 +44,14 @@ def do_aarch64(name: str,
                disk_name: str,
                smp: int,
                ram: int,
-               port: int,
+               ssh_port: int,
                kernel: str | None,
+               kernel_extra_bootargs: str | None,
                qemu_path: str | None = None,
                extra: tuple[str] | None = None):
     from .utils.qemu import run_aarch64_linux as run
+
+    qemu_extra_args = extra
 
     if qemu_path:
         qemu_path = pathlib.Path(qemu_path).resolve()
@@ -65,11 +70,12 @@ def do_aarch64(name: str,
 
     run(
         qemu,
-        extra,
+        qemu_extra_args,
         init=False,
         smp=smp,
         ram=ram,
         disk=pathlib.Path(disk_name),
-        port=port,
+        ssh_port=ssh_port,
         kernel=kernel,
+        kernel_extra_bootargs=kernel_extra_bootargs,
     )

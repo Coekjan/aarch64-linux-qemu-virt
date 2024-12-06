@@ -121,5 +121,5 @@ already initialized this workspace')
         smp=smp,
         ram=ram,
         disk=pathlib.Path(disk_name),
-        port=port,
+        ssh_port=port,
     )

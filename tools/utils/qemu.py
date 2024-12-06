@@ -9,9 +9,9 @@ def run_aarch64_linux(qemu: pathlib.Path,
                       smp: int,
                       ram: int,
                       disk: pathlib.Path,
-                      port: int,
+                      ssh_port: int,
                       kernel: pathlib.Path | None = None,
-                      extra_bootargs: str | None = None):
+                      kernel_extra_bootargs: str | None = None):
     args = (
         qemu, '-M', 'virt',
         '-machine', 'virtualization=true',
@@ -26,7 +26,7 @@ def run_aarch64_linux(qemu: pathlib.Path,
         '-object', 'rng-random,filename=/dev/urandom,id=rng0',
         '-device', 'virtio-rng-pci,rng=rng0',
         '-device', 'virtio-net-pci,netdev=net0',
-        '-netdev', f'user,id=net0,hostfwd=tcp::{port}-:22',
+        '-netdev', f'user,id=net0,hostfwd=tcp::{ssh_port}-:22',
         '-nographic',
     )
     if extra:
@@ -39,12 +39,11 @@ def run_aarch64_linux(qemu: pathlib.Path,
     if kernel is not None:
         if init:
             raise ValueError('Cannot specify kernel when initializing')
-        else:
-            bootargs = 'earlycon root=/dev/vda2'
-            if extra_bootargs:
-                bootargs += ' ' + extra_bootargs
-            args = args + (
-                '-kernel', kernel,
-                '-append', bootargs,
-            )
+        bootargs = 'earlycon root=/dev/vda2'
+        if kernel_extra_bootargs:
+            bootargs += ' ' + kernel_extra_bootargs
+        args = args + (
+            '-kernel', kernel,
+            '-append', bootargs,
+        )
     subprocess.check_call(args)
