@@ -2,7 +2,7 @@ import argparse
 import pathlib
 import subprocess
 
-from tools.utils.common import check_program, goto_workspace
+from .utils.common import check_program, goto_workspace
 
 
 def args(parser: argparse.ArgumentParser):

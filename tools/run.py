@@ -1,7 +1,7 @@
 import argparse
 import pathlib
 
-from tools.utils.common import check_program, goto_workspace
+from .utils.common import check_program, goto_workspace
 
 
 def args(parser: argparse.ArgumentParser):
@@ -24,6 +24,8 @@ def args(parser: argparse.ArgumentParser):
                         help='The port to forward SSH to')
     parser.add_argument('-Q', '--qemu-path', type=validate_filepath_arg,
                         help='The path to the QEMU executable')
+    parser.add_argument('--qemu-debug', action='store_true',
+                        help='Debug QEMU')
     parser.add_argument('-K', '--kernel', type=validate_filename_arg,
                         help='The name of the kernel image')
     parser.add_argument('-A', '--kernel-extra-bootargs', type=str,
@@ -45,9 +47,10 @@ def do_aarch64(name: str,
                smp: int,
                ram: int,
                ssh_port: int,
-               kernel: str | None,
-               kernel_extra_bootargs: str | None,
                qemu_path: str | None = None,
+               qemu_debug: bool = False,
+               kernel: str | None = None,
+               kernel_extra_bootargs: str | None = None,
                extra: tuple[str] | None = None):
     from .utils.qemu import run_aarch64_linux as run
 
@@ -63,10 +66,10 @@ def do_aarch64(name: str,
 
     if kernel is not None:
         if not pathlib.Path(kernel).exists():
-            if pathlib.Path(f'Image-{kernel}').exists():
-                kernel = f'Image-{kernel}'
-            else:
+            candidate = pathlib.Path(f'Image-{kernel}')
+            if not candidate.exists():
                 raise FileNotFoundError(f'Kernel image `{kernel}` not found')
+            kernel = candidate
 
     run(
         qemu,
@@ -76,6 +79,7 @@ def do_aarch64(name: str,
         ram=ram,
         disk=pathlib.Path(disk_name),
         ssh_port=ssh_port,
+        qemu_debug=qemu_debug,
         kernel=kernel,
         kernel_extra_bootargs=kernel_extra_bootargs,
     )
