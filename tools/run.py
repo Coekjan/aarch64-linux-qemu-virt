@@ -14,6 +14,8 @@ def args(parser: argparse.ArgumentParser):
 
     parser.add_argument('name', type=validate_filename_arg,
                         help='The name of the workspace')
+    parser.add_argument('--dry-run', action='store_true', default=False,
+                        help='Print the command instead of running it')
     parser.add_argument('--disk-name', type=validate_filename_arg, default='disk.img',
                         help='The name of the disk image')
     parser.add_argument('--smp', type=int, default=2,
@@ -43,6 +45,7 @@ def do(arch: str, **kwargs):
 
 
 def do_aarch64(name: str,
+               dry_run: bool,
                disk_name: str,
                smp: int,
                ram: int,
@@ -82,4 +85,5 @@ def do_aarch64(name: str,
         qemu_debug=qemu_debug,
         kernel=kernel,
         kernel_extra_bootargs=kernel_extra_bootargs,
+        dry_run=dry_run,
     )

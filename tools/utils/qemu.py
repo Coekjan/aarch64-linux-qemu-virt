@@ -12,7 +12,8 @@ def run_aarch64_linux(qemu: pathlib.Path,
                       ssh_port: int,
                       qemu_debug: bool = False,
                       kernel: pathlib.Path | None = None,
-                      kernel_extra_bootargs: str | None = None):
+                      kernel_extra_bootargs: str | None = None,
+                      dry_run: bool):
     args = (
         qemu, '-M', 'virt',
         '-machine', 'virtualization=true',
@@ -51,4 +52,10 @@ def run_aarch64_linux(qemu: pathlib.Path,
         if init:
             raise ValueError('Cannot debug when initializing')
         args = ('gdb', '--args') + args
-    subprocess.check_call(args)
+    if dry_run:
+        def stringify(arg):
+            arg = str(arg)
+            return f'"{arg}"' if ' ' in arg else arg
+        print(' '.join(map(stringify, args)))
+    else:
+        subprocess.check_call(args)
